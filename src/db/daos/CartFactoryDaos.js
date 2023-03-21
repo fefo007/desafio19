@@ -1,17 +1,22 @@
 
-const MemoryCart = require('./memoryDaos/MemoryCart')
-const MongoDbCart = require('./mongoDaos/MongoDbCart')
+const FileCart = require('./fileDaos/FileCart')
+const FireBaseCart = require('./fireBaseDaos/FireBaseCart')
+const MongoDbCart =require('./mongoDaos/MongoDbCart')
+const {cartSchema} = require('../mongoSchemas/mongoSchemas')
 
-const option = process.argv[2] || 'mem'
+const option = process.argv[2] || 'mongo'
 
 let dao
-switch (option) {
-    case 'Mongo':
-        dao = new MongoDbCart(collectionName,schema)
+switch (option.toLocaleLowerCase()) {
+    case 'file':
+        dao = FileCart.getInstance()
         break;
-    default: 'Memory'
-        dao =new MemoryCart()
+    case 'fire':
+        dao = FireBaseCart.getInstance()
         break;
+    default: 'mongo'
+        dao = MongoDbCart.getInstance('carritos',cartSchema)
+        
 }
 
 class CartFactoryDaos{

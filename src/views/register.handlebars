@@ -9,7 +9,7 @@
 </head>
 <body>
 
-    <form class="form" action="/user/register" method="post" role="form" autocomplete="off">
+    <form class="form" action="/usuarios/register" method="post" role="form" autocomplete="off" enctype="multipart/form-data">
 
         <div class="form-floating mb-1">
             <input id="nombre" name='username' placeholder="nombre" class="form-control" type="text" required>
@@ -27,7 +27,7 @@
         </div>
 
         <div class="form-floating mb-1">
-            <input id="residencia" name='direcction' placeholder="residencia" class="form-control" type="text" required>
+            <input id="residencia" name='direction' placeholder="residencia" class="form-control" type="text" required>
             <label for="floatingInput">residencia</label>
         </div>
 
@@ -41,14 +41,9 @@
             <label for="floatingInput">celular</label>
         </div>
 
-        {{!-- <div class="mb-3">
-            <label for="formFile" class="form-label">seleccionar imagen avatar</label>
-            <input class="form-control" type="file" id="formFile">
-        </div> --}}
-
-        <div class="form-floating mb-1">
-            <input id="imagen" name='image' placeholder="imagen" class="form-control" type="text" required>
-            <label for="floatingInput">imagen</label>
+        <div class="mb-3">
+            <label for="image" class="form-label">seleccionar imagen avatar</label>
+            <input class="form-control" type="file" id="image" name="image">
         </div>
 
         <div class="form-group">
@@ -57,7 +52,7 @@
     </form>
 
     <div class="text-left">
-        <button class="btn btn-success my-3" onclick="location.href = '/user/login'">Ir a Login</button>
+        <button class="btn btn-success my-3" onclick="location.href = '/'">Ir a Login</button>
     </div>
 </body>
 </html>

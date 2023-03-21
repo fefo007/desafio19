@@ -3,8 +3,8 @@ const log4js = require('log4js')
 log4js.configure({
     appenders:{
         terminal:{type:'console'},
-        warnFile:{type:'file',filename:'warning.log'},
-        errorFile:{type:'file',filename:'error.log'},
+        warnFile:{type:'file',filename:__dirname + 'warning.log'},
+        errorFile:{type:'file',filename:__dirname + 'error.log'},
         loggerInfo:{type:'logLevelFilter',appender:'terminal',level:'info'},
         loggerWarn:{type:'logLevelFilter',appender:'warnFile',level:'warn',maxLevel:'warn'},
         loggerError:{type:'logLevelFilter',appender:'errorFile',level:'error',maxLevel:'error'},

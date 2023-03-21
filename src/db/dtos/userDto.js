@@ -1,13 +1,14 @@
 
 class UserDto {
-    constructor(username,password,email,direcction,age,cel,image){
+    constructor({username,password,email,direction,age,cel,image,id}){
         this.username=username
         this.password=password
         this.email=email
-        this.direcction=direcction
+        this.direction=direction
         this.age=age
         this.cel=cel
         this.image=image
+        this.id=id
     }
 }
 

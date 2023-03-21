@@ -1,10 +1,31 @@
-// const MongoDbUserContainer = require('../daos/MongoDbUserContainer')
-// const userSchema = require('../daos/mongoSchemas/mongoSchemas')
-// const mongoDbUserContainer = new MongoDbUserContainer('usuarios',userSchema)
+const UserFactoryDao = require('../db/daos/UserFactoryDao')
+const user = UserFactoryDao.getDao()
 
-// const getUser =(username)=>{mongoDbUserContainer.getUser(username)}
-// const saveUser =(user)=>{
-//     console.log(user)
-//     mongoDbUserContainer.saveUser(user)}
 
-// module.exports={getUser,saveUser}
+async function getAll(){
+    return await user.getAll()
+}
+
+async function getByUsername(username){
+    return await user.getByUsername(username)
+}
+
+async function save(us){
+    return await user.save(us)
+}
+
+async function updateByUsername(username,userUpdate){
+    return await updateByUsername(username,userUpdate)
+} 
+
+async function deleteById(userId){
+    return await deleteById(userId)
+}
+
+module.exports={
+    getAll,
+    getByUsername,
+    save,
+    updateByUsername,
+    deleteById
+}

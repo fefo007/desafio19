@@ -1,18 +1,22 @@
-const mongoose = require("mongoose");
-const config = require ('../../../config')
-const logger = require('../../../loggers/loggers')
 
-mongoose.set('strictQuery', false);
-try {
-    mongoose.connect(config.MONGO_STORE)
-    logger.info('base de datos conectada')
-} catch (error) {
-    logger.error(error)
-}
+const mongoModel = require('../../dbConnect/mongoConnect')
+const logger = require('../../../utils/loggers/loggers')
+const {producSchema} =require('../../mongoSchemas/mongoSchemas')
+const {asCartDto} = require('../../dtos/cartDto')
+
+let instance=null
 
 class MongoDbCart {
     constructor(collectionName,schema){
-        this.collection=mongoose.model(collectionName,schema)
+        this.collection=mongoModel(collectionName,schema)
+    }
+    async getAllCarts(){
+        try {
+            let files = await this.collection.find({},{__v:0})
+            return asCartDto(files)
+        } catch (error) {
+            logger.error(`error al obtener los carritos: ${error}`)
+        }
     }
     async createCart(){
         try{
@@ -21,49 +25,63 @@ class MongoDbCart {
                     timestamp:new Date().toLocaleString(),
                     products:[]}
             const itemSave= await this.collection.create(cart)
-            return itemSave.id}
+            return asCartDto([{...cart,id:itemSave.id}])
+        }
         catch(error){
-            throw new Error('error al actualizar')
+            logger.error(`error al crear el carrito: ${error}`)
         }
     }
     async deleteCart(cartId){
         try{
-            const deleteProd=await this.collection.deleteOne({'_id':cartId})
-            return deleteProd}
+            const cart=await this.collection.find({'_id':cartId},{__v:0})
+            await this.collection.deleteOne({'_id':cartId})
+            return asCartDto(cart)
+        }
         catch(error){
-            throw new Error('error al actualizar')
+            logger.error(`error  al borrar el carrito: ${error}`)
         }
     }
     async getById(cartId){
         try{
             const cart=await this.collection.find({'_id':cartId},{__v:0})
-                return cart}
+                return asCartDto(cart)
+            }
         catch(error){
-            throw new Error('error al actualizar')
+            logger.error(`error al obtener el carrito: ${error}`)
         }
         }
     async save(idProduct,idcart){
         try{
-            const carrito =await this.getById(idcart)
-            const prod=await this.collection('products','prod').find({'_id':idProduct},{__v:0})
-            const saveInCart=carrito.products.push(prod)
-            const save = await this.collection.updateOne({'_id':saveInCart._id},{'products':saveInCart})
-            return save
+            const file =await this.collection.find({},{__v:0})
+            const carrito = file.find(cart=>cart._id == idcart)
+            const prod=await mongoModel('productos',producSchema).find({'_id':idProduct},{__v:0})
+            const product = prod.find(product=>product._id == idProduct)
+            carrito.products.push(product)
+            await this.collection.updateOne({'_id':idcart},carrito)
+            return asCartDto([carrito])
             }
         catch(error){
-            throw new Error('error al actualizar')
+            logger.error(`error al guardar en el carrito: ${error}`)
         }
     }
     async deleteById(idProduct,idcart) {
         try{
-            const carrito = this.getById(idcart)
-            const arrayFiltrado = carrito.products.filter(products => products.id !== idProduct);
-            carrito=arrayFiltrado
-            const deleted = await this.collection.updateOne({'_id':arrayFiltrado._id},{'products':arrayFiltrado})
-            return deleted}
-        catch(error){
-            throw new Error('error al actualizar')
+            const file =await this.collection.find({},{__v:0})
+            const carrito = file.find(cart=>cart._id == idcart)
+            const filterProds = carrito.products.filter(prods=>prods._id != idProduct)
+            carrito.products = filterProds
+            await this.collection.updateOne({'_id':idcart},carrito)
+            return asCartDto([carrito])
         }
+        catch(error){
+            logger.error(`error al borrar del carrito: ${error}`)
+        }
+    }
+    static getInstance(collectionName,schema){
+        if(!instance){
+            instance =  new MongoDbCart(collectionName,schema)
+        }
+        return instance
     }
 }
 

@@ -1,27 +1,19 @@
 const sendMail=require('../utils/sendNotifications/sendEmail')
 const {newUserEmail}=require('../utils/sendNotifications/emailTemplates')
 const bCrypt = require('bcrypt')
-// BASES DE DATOS 
-const UserFactory = require('../db/daos/UserFactoryDao')
-// const MongoDbUser = require('../db/daos/mongoDaos/MongoDbUser')
-// const userSchema = require('../db/mongoSchemas/mongoSchemas')
-const userDao = UserFactory.getDao()
-// const mongoDbUserContainer = MongoDbUser.getInstance('usuarios',userSchema)
-// const mongoDbUserContainer = new MongoDbUser('usuarios',userSchema)
-
-// const MemoryUsers=require('../db/daos/memoryDaos/MemoryUsers')
-// const memoryUsers = MemoryUsers.getInstance()
-// const memoryUsers=new MemoryUsers()
+const {
+    getByUsername,
+    save,
+} = require('./serviceLog')
+const {PORT} = require('../utils/multer/multerConfig')
+const config = require('../config')
 
 
+const passportRegisterConfig = async (req, username, password, done) => {
 
-const passportRegisterConfig= async (req, username, password, done) => {
+    const {email,direction,age,cel} = req.body
 
-    const {email,direcction,age,cel,image } = req.body
-    // BASE DE DATOS--------- 
-    let user = await userDao.getUser(username)
-    // let user =await memoryUsers.getUser(username)
-
+    let user = await getByUsername(username)
     if (user) {
     return done('usuario ya existente')
     }
@@ -29,16 +21,13 @@ const passportRegisterConfig= async (req, username, password, done) => {
         username:username,
         password:bCrypt.hashSync(password,bCrypt.genSaltSync(10),null),
         email:email,
-        direcction:direcction,
+        direction:direction,
         age:age,
         cel:cel,
-        image:image
+        image:`${config.HOST}:${PORT}/public/${req.file.filename}`
     }
-    console.log(user)
 
-    // BASE DE DATOS--------- 
-    userDao.saveUser(user)
-    // memoryUsers.saveUser(user)
+    save(user)
 
     const newuser=newUserEmail(user)
     sendMail('nuevo usuario',newuser)
@@ -52,20 +41,17 @@ function isValidPass(user,password){
 
 const passportLoginConfig= async(username, password, done) => {
 
-    // BASE DE DATOS--------- 
-    const user =await userDao.getUser(username)
-    // const user =await memoryUsers.getUser(username)
-    console.log(user)
+    const user =await getByUsername(username)
+
     if (!user) {
-        return done(null, false)
+        return done(null, false,{message:'usuario inexistente'})
     }
 
     if (!isValidPass(user,password)) {
-        return done(null, false)
+        return done(null, false,{message:'password incorrecto'})
     }
 
-    user.contador = 0
-    return done(null, user);
+    return done(null, user,{message:'logeo exitoso'});
 }
 
 
@@ -74,9 +60,7 @@ const passportSerializerConfig=function (user, done) {
 }
 
 const passportDesserializerConfig=async function (username, done) {
-    // BASE DE DATOS--------- 
-    const user =await userDao.getUser(username)
-    // const user =await memoryUsers.getUser(username)
+    const user =await getByUsername(username)
     done(null, user);
 }
 
