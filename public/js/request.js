@@ -1,6 +1,6 @@
 
 
-let url =`http://localhost:8080`
+let url =`https://desafio19-production.up.railway.app/`
 
 const getProducts = async ()=>{
     try {
